@@ -11,14 +11,6 @@ const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 
 const app = express();
-app.use(session({
-  secret: 'codecademy',
-  resave: false,
-  saveUnitialized: false
-  })
-);
-
-
 
 /*
  * Variable Declarations
@@ -31,12 +23,12 @@ const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 /*
  * Passport Configurations
 */
-passport.use(GitHubStrategy({
-  clientId: GITHUB_CLIENT_ID,
+passport.use(new GitHubStrategy({
+  clientID: GITHUB_CLIENT_ID,
   clientSecret: GITHUB_CLIENT_SECRET,
   callbackURL: "http://localhost:3000/auth/github/callback"
-}, function(accessToken, refreshToken, profile, done) {
-  return done(null, profile);
+}, (accessToken, refreshToken, profile, done) => {
+  done(null, profile);
 })
 );
 
@@ -56,6 +48,13 @@ app.set('view engine', 'ejs');
 app.use(partials());
 app.use(express.json());
 app.use(express.static(__dirname + '/public'));
+app.use(
+  session({
+    secret: 'codecademy',
+    resave: false,
+    saveUninitialized: false
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -102,7 +101,7 @@ app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 /*
  * ensureAuthenticated Callback Function
 */
-const ensureAuthenticated = (req, res, next) => {
+function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     next();
   } else {
